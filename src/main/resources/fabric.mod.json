@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "trajectory_estimation",
+  "version": "${version}",
+
+  "name": "Trajectory Estimation",
+  "description": "This mod adds client-side rendered trajectory for some items in game.",
+  "authors": [
+    "Sonnenlichts"
+  ],
+  "contact": {
+    "sources": "https://github.com/Sonnenlicht-as/Trajectory-Estimation",
+    "issues": "https://github.com/Sonnenlicht-as/Trajectory-Estimation/issues"
+  },
+
+  "license": "GPL-3.0",
+  "icon": "assets/trajectory_estimation/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "sonnenlichts.tje.TrajectoryEstimationClient"
+    ],
+    "modmenu": [
+      "sonnenlichts.tje.client.config.ModMenuIntegration"
+    ]
+  },
+
+  "mixins": [],
+
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "recommends": {
+    "cloth-config": "*",
+    "modmenu": "*"
+  }
+}

@@ -3,7 +3,7 @@ package sonnenlichts.tje.client.util;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-import static sonnenlichts.tje.TrajectoryEstimation.MOD_ID;
+import static sonnenlichts.tje.TrajectoryEstimationClient.MOD_ID;
 
 public class StringHelper {
     public static boolean isNullOrEmpty(@Nullable String targetStr) {
@@ -11,6 +11,6 @@ public class StringHelper {
     }
 
     public static ResourceLocation create(String target) {
-        return new ResourceLocation(MOD_ID, target);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, target);
     }
 }

@@ -1,6 +1,6 @@
 package sonnenlichts.tje.client.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import static sonnenlichts.tje.TrajectoryEstimationClient.MOD_ID;
@@ -10,7 +10,7 @@ public class StringHelper {
         return targetStr == null || targetStr.isEmpty();
     }
 
-    public static ResourceLocation create(String target) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, target);
+    public static Identifier create(String target) {
+        return Identifier.of(MOD_ID, target);
     }
 }

@@ -1,7 +1,7 @@
 package sonnenlichts.tje;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonnenlichts.tje.client.config.TjeModConfig;
@@ -25,8 +25,8 @@ public class TrajectoryEstimationClient implements ClientModInitializer {
         // Create render handler
         renderHandler = new ClientRenderHandler();
 
-        // Register world render event
-        WorldRenderEvents.END.register(context -> {
+        // Register level render event (replaces WorldRenderEvents.END in 1.21.11)
+        LevelRenderEvents.END_MAIN.register(context -> {
             renderHandler.onWorldRender(context);
         });
 

@@ -1,6 +1,6 @@
 package sonnenlichts.tje.client.event;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
@@ -39,7 +39,7 @@ public class ClientRenderHandler {
     private int soundPlayCount = 0;
     public static final Logger LOGGER = LoggerFactory.getLogger(TrajectoryEstimationClient.MOD_ID);
 
-    public void onWorldRender(WorldRenderContext context) {
+    public void onWorldRender(LevelRenderContext context) {
         MinecraftClient mc = MinecraftClient.getInstance();
         PlayerEntity player = mc.player;
         World world = mc.world;
@@ -48,12 +48,13 @@ public class ClientRenderHandler {
 
         ItemStack itemStackUsing = player.getActiveItem();
         ItemStack itemStack = ModUtils.getCorrectItem(player);
-        MatrixStack matrix = context.matrixStack();
+        MatrixStack matrix = new MatrixStack();
+        matrix.multiplyPositionMatrix(context.poseStack().peek().getPositionMatrix());
 
         VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
         VertexConsumer builder = buffer.getBuffer(BUFFS);
 
-        Vec3d viewPos = mc.getEntityRenderDispatcher().camera.getPos();
+        Vec3d viewPos = mc.getEntityRenderDispatcher().camera.getCameraPos();
         Vec3d originPos = new Vec3d(player.getX(), player.getEyeY() - (double) 0.1F, player.getZ());
 
         // Bow handling
@@ -65,7 +66,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.05F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStackUsing);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStackUsing, world);
         }
 
         // Crossbow handling
@@ -97,7 +98,7 @@ public class ClientRenderHandler {
                     Quaternionf quaternionf = (new Quaternionf()).setAngleAxis(pProjectileAngle * MathHelper.RADIANS_PER_DEGREE, (float) vec31.x, (float) vec31.y, (float) vec31.z);
                     Vector3f vector3f = vec32.toVector3f().rotate(quaternionf);
                     Vec3d vec3 = ModUtils.calculateVec(player, pVelocity, pInaccuracy, new Vec3d(vector3f.x(), vector3f.y(), vector3f.z()));
-                    this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+                    this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
                 }
             }
         }
@@ -110,7 +111,7 @@ public class ClientRenderHandler {
 
             // Check for Riptide enchantment using 1.21 API
             int riptideLevel = EnchantmentHelper.getLevel(
-                    player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
+                    world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
                             .getEntry(Enchantments.RIPTIDE).orElse(null),
                     itemStackUsing
             );
@@ -121,7 +122,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.05F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStackUsing);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStackUsing, world);
         }
 
         // Snowball handling
@@ -130,7 +131,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.03F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
         }
 
         // Egg handling
@@ -139,7 +140,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.03F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
         }
 
         // Experience bottle handling
@@ -148,7 +149,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.07F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy, -20F);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
         }
 
         // Potion handling
@@ -157,7 +158,7 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.03F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
         }
 
         // Ender pearl handling
@@ -166,13 +167,13 @@ public class ClientRenderHandler {
             float pInaccuracy = 0.0F;
             float gravity = 0.03F;
             Vec3d vec3 = ModUtils.calculateShootVec(player, pVelocity, pInaccuracy);
-            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack);
+            this.renderTracePoint(vec3, originPos, viewPos, matrix, player, builder, gravity, itemStack, world);
         }
 
         buffer.draw(BUFFS);
     }
 
-    private void renderTracePoint(Vec3d vec3, Vec3d origin, Vec3d view, MatrixStack matrix, PlayerEntity player, VertexConsumer builder, float gravity, ItemStack stack) {
+    private void renderTracePoint(Vec3d vec3, Vec3d origin, Vec3d view, MatrixStack matrix, PlayerEntity player, VertexConsumer builder, float gravity, ItemStack stack, World world) {
         boolean renderPlane = true;
         float step = 0.7F, begin = 1, end = 500;
 
@@ -210,7 +211,7 @@ public class ClientRenderHandler {
                     }
                     matrix.pop();
                     if (renderPlane) {
-                        if (!(player.getWorld().getBlockState(ModUtils.getCorrectPos(player.getWorld(), pos)).getBlock() instanceof AirBlock || player.getWorld().getBlockState(ModUtils.getCorrectPos(player.getWorld(), pos)).getBlock() instanceof FluidBlock)) {
+                        if (!(world.getBlockState(ModUtils.getCorrectPos(world, pos)).getBlock() instanceof AirBlock || world.getBlockState(ModUtils.getCorrectPos(world, pos)).getBlock() instanceof FluidBlock)) {
                             matrix.push();
                             h = MathHelper.clamp(h * 0.8F, 0.01F, 10F);
                             hw = MathHelper.clamp(hw * 4F, 0.01F, 20F);
@@ -237,17 +238,17 @@ public class ClientRenderHandler {
                     }
                 }
             }
-            this.playHitSound(pos, player, stack);
+            this.playHitSound(pos, player, stack, world);
         }
     }
 
-    private void playHitSound(Vec3d pos, PlayerEntity player, ItemStack stack) {
+    private void playHitSound(Vec3d pos, PlayerEntity player, ItemStack stack, World world) {
         if (!TjeModConfig.targetSound) return;
         if (ModUtils.isVanillaItemsSound(stack)) {
-            List<LivingEntity> targets = ModUtils.checkEntityOnBlock(BlockPos.ofFloored(pos), player.getWorld(), 0, LivingEntity.class);
+            List<LivingEntity> targets = ModUtils.checkEntityOnBlock(BlockPos.ofFloored(pos), world, 0, LivingEntity.class);
             targets.remove(player);
             for (Entity entity : targets) {
-                if (entity instanceof LivingEntity entity2 && entity2 != MinecraftClient.getInstance().cameraEntity) {
+                if (entity instanceof LivingEntity entity2 && entity2 != MinecraftClient.getInstance().getCameraEntity()) {
                     if (this.soundPlayCount % 60 == 0) player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 2F);
                 }
             }

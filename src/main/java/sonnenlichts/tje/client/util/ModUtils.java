@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.util.Hand;
-import net.minecraft.util.UseAction;
+import net.minecraft.item.consume.UseAction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
@@ -165,9 +165,7 @@ public class ModUtils {
         float changeZ = (float) (zo - z);
         if (!(changeX == 0 && changeY == 0 && changeZ == 0) && count % stp == 0) {
             float factor = 2F;
-            float amplitude = MathHelper.clamp((factor - player.age - MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true)) / factor, 0F, 1F);
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
+            float amplitude = MathHelper.clamp((factor - player.age - MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false)) / factor, 0F, 1F);
             RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -177,8 +175,6 @@ public class ModUtils {
                 drawLineVertex(changeX, changeY, changeZ, bufferbuilder, entry, p / rd, (p + 1) / rd, amplitude, lr, lg, lb, la);
             BufferRenderer.drawWithGlobalProgram(bufferbuilder.end());
             RenderSystem.lineWidth(1.0F);
-            RenderSystem.enableCull();
-            RenderSystem.depthMask(true);
         }
     }
 

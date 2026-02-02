@@ -1,6 +1,6 @@
 package sonnenlichts.tje.client.event;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
@@ -48,7 +48,7 @@ public class ClientRenderHandler {
 
         ItemStack itemStackUsing = player.getActiveItem();
         ItemStack itemStack = ModUtils.getCorrectItem(player);
-        MatrixStack matrix = context.matrixStack();
+        MatrixStack matrix = context.matrices();
 
         VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
         VertexConsumer builder = buffer.getBuffer(BUFFS);
@@ -109,9 +109,10 @@ public class ClientRenderHandler {
             if (i < 10) return;
 
             // Check for Riptide enchantment using 1.21 API
+            // getOptional returns Optional<Reference<Enchantment>> which is a RegistryEntry
             var enchantmentRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
             int riptideLevel = enchantmentRegistry.getOptional(Enchantments.RIPTIDE)
-                    .map(enchantment -> EnchantmentHelper.getLevel(enchantmentRegistry.getEntry(enchantment), itemStackUsing))
+                    .map(entry -> EnchantmentHelper.getLevel(entry, itemStackUsing))
                     .orElse(0);
             if (!(riptideLevel <= 0 || player.isTouchingWaterOrRain())) return;
             if (riptideLevel != 0) return;

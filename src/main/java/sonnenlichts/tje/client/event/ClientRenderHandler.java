@@ -1,6 +1,6 @@
 package sonnenlichts.tje.client.event;
 
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
@@ -39,7 +39,7 @@ public class ClientRenderHandler {
     private int soundPlayCount = 0;
     public static final Logger LOGGER = LoggerFactory.getLogger(TrajectoryEstimationClient.MOD_ID);
 
-    public void onWorldRender(LevelRenderContext context) {
+    public void onWorldRender(WorldRenderContext context) {
         MinecraftClient mc = MinecraftClient.getInstance();
         PlayerEntity player = mc.player;
         World world = mc.world;
@@ -48,8 +48,7 @@ public class ClientRenderHandler {
 
         ItemStack itemStackUsing = player.getActiveItem();
         ItemStack itemStack = ModUtils.getCorrectItem(player);
-        MatrixStack matrix = new MatrixStack();
-        matrix.multiplyPositionMatrix(context.poseStack().peek().getPositionMatrix());
+        MatrixStack matrix = context.matrixStack();
 
         VertexConsumerProvider.Immediate buffer = mc.getBufferBuilders().getEntityVertexConsumers();
         VertexConsumer builder = buffer.getBuffer(BUFFS);
@@ -110,11 +109,10 @@ public class ClientRenderHandler {
             if (i < 10) return;
 
             // Check for Riptide enchantment using 1.21 API
-            int riptideLevel = EnchantmentHelper.getLevel(
-                    world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT)
-                            .getEntry(Enchantments.RIPTIDE).orElse(null),
-                    itemStackUsing
-            );
+            var enchantmentRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+            int riptideLevel = enchantmentRegistry.getOptional(Enchantments.RIPTIDE)
+                    .map(enchantment -> EnchantmentHelper.getLevel(enchantmentRegistry.getEntry(enchantment), itemStackUsing))
+                    .orElse(0);
             if (!(riptideLevel <= 0 || player.isTouchingWaterOrRain())) return;
             if (riptideLevel != 0) return;
 

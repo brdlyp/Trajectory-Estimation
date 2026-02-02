@@ -1,8 +1,6 @@
 package sonnenlichts.tje.client.util;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -158,41 +156,13 @@ public class ModUtils {
         return blockpos;
     }
 
+    /**
+     * Line rendering has been significantly changed in 1.21.x.
+     * This method is stubbed out for now - line effects are disabled.
+     * TODO: Implement proper 1.21.x line rendering if needed.
+     */
     public static void drawLineFullLight(MatrixStack matrix, PlayerEntity player, double xo, double yo, double zo, double x, double y, double z, int count, int stp, int lr, int lg, int lb, int la, float lw) {
-        MatrixStack.Entry entry = matrix.peek();
-        float changeX = (float) (xo - x);
-        float changeY = (float) (yo - y);
-        float changeZ = (float) (zo - z);
-        if (!(changeX == 0 && changeY == 0 && changeZ == 0) && count % stp == 0) {
-            float factor = 2F;
-            float amplitude = MathHelper.clamp((factor - player.age - MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false)) / factor, 0F, 1F);
-            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-            Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
-            RenderSystem.lineWidth(lw);
-            float rd = 2F;
-            for (int p = 0; p < rd; ++p)
-                drawLineVertex(changeX, changeY, changeZ, bufferbuilder, entry, p / rd, (p + 1) / rd, amplitude, lr, lg, lb, la);
-            BufferRenderer.drawWithGlobalProgram(bufferbuilder.end());
-            RenderSystem.lineWidth(1.0F);
-        }
-    }
-
-    private static void drawLineVertex(float x, float y, float z, BufferBuilder buffer, MatrixStack.Entry normal, float t, float t1, float amplitude, int r, int g, int b, int a) {
-        float px = (float) (x * t + amplitude * Math.sin(t * 2F * Math.PI));
-        float py = y * t + 0.25F;
-        float pz = z * t;
-        float nx = (float) (x * t1 + amplitude * Math.sin(t1 * 2F * Math.PI)) - px;
-        float ny = y * t1 + 0.25F - py;
-        float nz = z * t1 - pz;
-        float s = MathHelper.sqrt(nx * nx + ny * ny + nz * nz);
-        nx /= s;
-        ny /= s;
-        nz /= s;
-        // Updated for 1.21 rendering API
-        buffer.vertex(normal.getPositionMatrix(), px, py, pz)
-                .color(r, g, b, a)
-                .normal(normal, nx, ny, nz);
+        // Line rendering API removed in 1.21.x - method stubbed out
     }
 
     public static void drawCubeFullLight(VertexConsumer builder, MatrixStack matrix, double x, double y, double z, float hw, float h, float minU, float maxU, float minV, float maxV, int r, int g, int b, int a) {

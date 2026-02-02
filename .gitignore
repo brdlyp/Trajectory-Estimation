@@ -1,6 +1,6 @@
 # User-specific stuff
 .idea/
-
+github-action-logs/
 *.iml
 *.ipr
 *.iws
